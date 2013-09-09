@@ -18,12 +18,9 @@
         <maven.resources.plugin.version>2.4</maven.resources.plugin.version>
         <maven.surefire.plugin.version>2.9</maven.surefire.plugin.version>
         
-        <cglib.version>2.2.2</cglib.version>
-        <javassist.version>3.12.1.GA</javassist.version>
-		<tools.version>1.6.0</tools.version>
+        <jillegal.agent.version>1.0.0-RELEASE</jillegal.agent.version>
+        <jillegal.version>1.0.1-RELEASE</jillegal.version>
 		<log4j.version>1.2.16</log4j.version>
-		<guava.version>13.0</guava.version>
-		<commons.lang.version>2.6</commons.lang.version>
 		
 		<kryo.version>2.21</kryo.version>
 		<avro.version>1.7.5</avro.version>
@@ -69,34 +66,18 @@
     </build>
     
    	<dependencies>
+   	
+   		<!-- Jillegal                                     -->
+        <!-- ============================================ -->
+		<dependency> 
+			<groupId>tr.com.serkanozal</groupId>
+			<artifactId>jillegal</artifactId>
+			<version>${jillegal.version}</version>
+		</dependency>
+		<!-- ============================================ -->
    	    
-   	    <!-- bytecode                                     -->
-        <!-- ============================================ -->
-		<dependency>
-			<groupId>javassist</groupId>
-			<artifactId>javassist</artifactId>
-			<version>${javassist.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>cglib</groupId>
-			<artifactId>cglib-nodep</artifactId>
-			<version>${cglib.version}</version>
-		</dependency>
-		<!-- ============================================ -->
-		
-		
-		
-		<!-- Java tools.jar                               -->
-		<!-- ============================================ -->
-		<dependency>
-            <groupId>com.sun</groupId>
-            <artifactId>tools</artifactId>
-            <version>${tools.version}</version>
-        </dependency>
-        <!-- ============================================ -->
-        
-        
-        
+   	   
+   	   
 		<!-- logging                                      -->
         <!-- ============================================ -->
 		<dependency>
@@ -104,22 +85,6 @@
 			<artifactId>log4j</artifactId>
 			<version>${log4j.version}</version>
 		</dependency>
-		<!-- ============================================ -->
-		
-		
-		
-		<!-- utility                                      -->
-        <!-- ============================================ -->
-        <dependency>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-            <version>${commons.lang.version}</version>
-        </dependency>
 		<!-- ============================================ -->
 		
 		
