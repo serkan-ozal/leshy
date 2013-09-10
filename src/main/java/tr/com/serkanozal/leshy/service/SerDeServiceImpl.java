@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import tr.com.serkanozal.jcommon.util.IoUtil;
+import tr.com.serkanozal.jcommon.util.LogUtil;
 import tr.com.serkanozal.jillegal.Jillegal;
 import tr.com.serkanozal.jillegal.instrument.Instrumenter;
 import tr.com.serkanozal.jillegal.instrument.domain.model.GeneratedClass;
@@ -35,8 +37,6 @@ import tr.com.serkanozal.jillegal.instrument.service.InstrumenterService;
 import tr.com.serkanozal.jillegal.instrument.service.InstrumenterServiceFactory;
 import tr.com.serkanozal.leshy.dispatcher.SerDeDispatcher;
 import tr.com.serkanozal.leshy.serde.SerDe;
-import tr.com.serkanozal.leshy.util.IoUtil;
-import tr.com.serkanozal.leshy.util.LogUtil;
 
 /**
  * @author Serkan ÖZAL

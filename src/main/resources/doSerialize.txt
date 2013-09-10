@@ -1,12 +1,13 @@
 try {
+	Class serdeServiceFactoryClass = 
+		ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory");
 	Boolean isSerializerRedirectLocked = 
-		ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
-			getDeclaredMethod("isSerializerRedirectLocked", null).invoke(null, null);
+		serdeServiceFactoryClass.getDeclaredMethod("isSerializerRedirectLocked", null).invoke(null, null);
 	if (isSerializerRedirectLocked.equals(Boolean.FALSE)) {
 		try { 
 			java.lang.reflect.Field f = bout.getClass().getDeclaredField("out");
 			f.setAccessible(true);
-			ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
+			serdeServiceFactoryClass.
 				getDeclaredMethod("doSerialize", new Class[] { java.io.ObjectOutputStream.class, Object.class, java.io.OutputStream.class }).
 					invoke(null, new Object[] { this, $1, (java.io.OutputStream)f.get(bout) });
 		}

@@ -14,21 +14,11 @@
  * limitations under the License.
  */
 
-package tr.com.serkanozal.leshy.util;
-
-import org.apache.log4j.Logger;
+package tr.com.serkanozal.leshy.service;
 
 /**
- * @author Serkan OZAL
+ * @author Serkan ÖZAL
  */
-public class LogUtil {
-
-	private LogUtil() {
-		
-	}
-	
-	public static Logger getLogger() {
-		return Logger.getLogger(Thread.currentThread().getStackTrace()[2].getClassName());
-	}
+public class SerDeServiceFactoryTest {
 	
 }
