@@ -35,10 +35,6 @@ import tr.com.serkanozal.leshy.serde.SerDe;
  */
 public class SerDeServiceTest {
 
-	public static void main(String[] args) throws IOException {
-		new SerDeServiceTest().serializeAndDeserializeSuccessfully();
-	}
-	
 	@Test
 	public void serializeAndDeserializeSuccessfully() throws IOException {
 		try{
@@ -51,9 +47,8 @@ public class SerDeServiceTest {
 			ObjectOutputStream oos = new ObjectOutputStream(bos);
 			oos.writeObject(new ClassToSerialize());
 			bos.flush();
-			
+
 			byte[] objectContent = bos.toByteArray();
-			
 			
 			ByteArrayInputStream bis = new ByteArrayInputStream(objectContent);
 			ObjectInputStream ois = new ObjectInputStream(bis);
@@ -70,7 +65,7 @@ public class SerDeServiceTest {
 
 		@Override
 		public void serialize(Object obj, OutputStream os) throws IOException {
-			System.out.println("serialize");
+			System.out.println("This is my CustomSerDe, but I am using ObjectOutputStream class of Java to serialize :)");
 			try {
 				SerDeServiceFactory.lockSerializerRedirect();
 				new ObjectOutputStream(os).writeObject(obj);
@@ -82,7 +77,7 @@ public class SerDeServiceTest {
 
 		@Override
 		public Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
-			System.out.println("deserialize");
+			System.out.println("This is my CustomSerDe, but I am using ObjectInputStream class of Java to deserialize :)");
 			try {
 				SerDeServiceFactory.lockDeserializerRedirect();
 				return new ObjectInputStream(is).readObject();

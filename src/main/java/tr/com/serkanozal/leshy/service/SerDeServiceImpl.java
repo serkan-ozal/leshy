@@ -58,8 +58,8 @@ public class SerDeServiceImpl implements SerDeService {
 	@Override
 	public void setup() {
 		try {
-			Jillegal.init();
-			
+            Jillegal.init();
+
 			final String doSerializeCode = 
 					IoUtil.getContentOfInputStream(IoUtil.getResourceAsStream("doSerialize.txt"));
 			final String doDeserializeCode = 	

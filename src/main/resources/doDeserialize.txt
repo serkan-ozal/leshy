@@ -4,10 +4,12 @@ try {
 			getDeclaredMethod("isDeserializerRedirectLocked", null).invoke(null, null);
 	if (isDeserializerRedirectLocked.equals(Boolean.FALSE)) {
 		try { 
+			java.lang.reflect.Field f = bin.getClass().getDeclaredField("in");
+			f.setAccessible(true);
 			return 
 				ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
 					getDeclaredMethod("doDeserialize", new Class[] {  java.io.ObjectInputStream.class, java.io.InputStream.class }).
-						invoke(null, new Object[] { this, bin });
+						invoke(null, new Object[] { this, (java.io.InputStream)f.get(bin) });
 		}
 		catch (Exception e) { 
 			e.printStackTrace();

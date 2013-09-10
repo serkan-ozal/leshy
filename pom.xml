@@ -17,8 +17,8 @@
         <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
         <maven.resources.plugin.version>2.4</maven.resources.plugin.version>
         <maven.surefire.plugin.version>2.9</maven.surefire.plugin.version>
-        
-        <jillegal.version>1.0.3-RELEASE</jillegal.version>
+         
+        <jillegal.version>1.0.3e-RELEASE</jillegal.version>
 		<log4j.version>1.2.16</log4j.version>
 		
 		<kryo.version>2.21</kryo.version>
