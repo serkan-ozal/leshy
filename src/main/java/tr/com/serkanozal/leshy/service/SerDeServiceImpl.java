@@ -31,11 +31,11 @@ import org.apache.log4j.Logger;
 import tr.com.serkanozal.jillegal.Jillegal;
 import tr.com.serkanozal.jillegal.instrument.Instrumenter;
 import tr.com.serkanozal.jillegal.instrument.domain.model.GeneratedClass;
-import tr.com.serkanozal.jillegal.instrument.interceptor.InterceptorServiceFactory;
 import tr.com.serkanozal.jillegal.instrument.service.InstrumenterService;
 import tr.com.serkanozal.jillegal.instrument.service.InstrumenterServiceFactory;
 import tr.com.serkanozal.leshy.dispatcher.SerDeDispatcher;
 import tr.com.serkanozal.leshy.serde.SerDe;
+import tr.com.serkanozal.leshy.util.IoUtil;
 import tr.com.serkanozal.leshy.util.LogUtil;
 
 /**
@@ -60,16 +60,20 @@ public class SerDeServiceImpl implements SerDeService {
 		try {
 			Jillegal.init();
 			
+			final String doSerializeCode = 
+					IoUtil.getContentOfInputStream(IoUtil.getResourceAsStream("doSerialize.txt"));
+			final String doDeserializeCode = 	
+					IoUtil.getContentOfInputStream(IoUtil.getResourceAsStream("doDeserialize.txt"));
+			
 			InstrumenterService instrumenterService = InstrumenterServiceFactory.getInstrumenterService();
 			
 	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
 	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
 	        GeneratedClass<ObjectOutputStream> instrumentedObjectOutputStreamClass = 
 	        	objectOutputStreamInstrumenter.
-	        		addAdditionalClass(InterceptorServiceFactory.class).
 		        	updateMethod(
 		        		"writeObject", 
-		        		"tr.com.serkanozal.leshy.service.SerDeServiceFactory.getSerdeService().doSerialize(this, $0, bout);", 
+		        		doSerializeCode, 
 		        		new Class<?>[] { Object.class }).
 		        	build();
 	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
@@ -78,11 +82,10 @@ public class SerDeServiceImpl implements SerDeService {
 	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
 	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
 	            	objectInputStreamInstrumenter.
-	            		addAdditionalClass(InterceptorServiceFactory.class).
 	    	        	updateMethod(
 	    	        		"readObject", 
-	    	        		"return tr.com.serkanozal.leshy.service.SerDeServiceFactory.getSerdeService().doDeserialize(this, $0);", 
-	    	        		new Class<?>[] { InputStream.class }).
+	    	        		doDeserializeCode, 
+	    	        		new Class<?>[] { }).
 	    	        	build();
 	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
 		}
@@ -105,8 +108,14 @@ public class SerDeServiceImpl implements SerDeService {
 				return;
 			}
 		}
-		os.write(0);
-		oos.writeObject(obj);
+		try {
+			SerDeServiceFactory.lockSerializerRedirect(); 
+			os.write(0);
+			oos.writeObject(obj);
+		}
+		finally {
+			SerDeServiceFactory.unlockSerializerRedirect(); 
+		}
 	}
 
 	@Override
@@ -121,11 +130,23 @@ public class SerDeServiceImpl implements SerDeService {
 				return serdeDispatcher.dispatchToDeserialize(is);
 			}
 			else {
-				return ois.readObject();
+				try {
+					SerDeServiceFactory.lockDeserializerRedirect(); 
+					return ois.readObject();
+				}
+				finally {
+					SerDeServiceFactory.unlockDeserializerRedirect(); 
+				}
 			}
 		}
 		else {
-			return ois.readObject();
+			try {
+				SerDeServiceFactory.lockDeserializerRedirect(); 
+				return ois.readObject();
+			}
+			finally {
+				SerDeServiceFactory.unlockDeserializerRedirect(); 
+			}
 		}
 	}
 

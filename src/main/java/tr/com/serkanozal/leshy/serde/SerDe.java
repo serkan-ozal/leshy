@@ -16,6 +16,7 @@
 
 package tr.com.serkanozal.leshy.serde;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -24,7 +25,7 @@ import java.io.OutputStream;
  */
 public interface SerDe {
 
-	void serialize(Object obj, OutputStream os);
-	Object deserialize(InputStream is);
+	void serialize(Object obj, OutputStream os) throws IOException;
+	Object deserialize(InputStream is) throws IOException, ClassNotFoundException;
 	
 }

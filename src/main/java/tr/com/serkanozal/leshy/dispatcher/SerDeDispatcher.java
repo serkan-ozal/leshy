@@ -16,6 +16,7 @@
 
 package tr.com.serkanozal.leshy.dispatcher;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -48,11 +49,11 @@ public class SerDeDispatcher implements Filter {
 		return filter.useObject(o);
 	}
 	
-	public void dispatchToSerialize(Object obj, OutputStream os) {
+	public void dispatchToSerialize(Object obj, OutputStream os) throws IOException {
 		serde.serialize(obj, os);
 	}
 	
-	public Object dispatchToDeserialize(InputStream is) {
+	public Object dispatchToDeserialize(InputStream is) throws IOException, ClassNotFoundException {
 		return serde.deserialize(is);
 	}
 

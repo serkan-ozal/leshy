@@ -1,0 +1,47 @@
+try {
+	Boolean isDeserializerRedirectLocked = 
+		ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
+			getDeclaredMethod("isDeserializerRedirectLocked", null).invoke(null, null);
+	if (isDeserializerRedirectLocked.equals(Boolean.FALSE)) {
+		try { 
+			return 
+				ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
+					getDeclaredMethod("doDeserialize", new Class[] {  java.io.ObjectInputStream.class, java.io.InputStream.class }).
+						invoke(null, new Object[] { this, bin });
+		}
+		catch (Exception e) { 
+			e.printStackTrace();
+			return null;
+		}
+	}
+	else {
+		if (enableOverride) {
+	    	return readObjectOverride();
+		}
+
+		// if nested read, passHandle contains handle of enclosing object
+		int outerHandle = passHandle;
+		try {
+	   	 	Object obj = readObject0(false);
+	    	handles.markDependency(outerHandle, passHandle);
+	    	ClassNotFoundException ex = handles.lookupException(passHandle);
+	    	if (ex != null) {
+				throw ex;
+	    	}
+	    	if (depth == 0) {
+				vlist.doCallbacks();
+	    	}
+	    	return obj;
+		} 
+		finally {
+	   	 	passHandle = outerHandle;
+	    	if (closed && depth == 0) {
+				clear();
+	    	}
+		}
+	}	
+}
+catch (Exception e) {
+	e.printStackTrace();
+	return null;
+}		

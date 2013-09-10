@@ -1,0 +1,33 @@
+try {
+	Boolean isSerializerRedirectLocked = 
+		ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
+			getDeclaredMethod("isSerializerRedirectLocked", null).invoke(null, null);
+	if (isSerializerRedirectLocked.equals(Boolean.FALSE)) {
+		try { 
+			ClassLoader.getSystemClassLoader().loadClass("tr.com.serkanozal.leshy.service.SerDeServiceFactory").
+				getDeclaredMethod("doSerialize", new Class[] { java.io.ObjectOutputStream.class, Object.class, java.io.OutputStream.class }).
+					invoke(null, new Object[] { this, $1, bout });
+		}
+		catch (Exception e) { 
+			e.printStackTrace();
+		}
+	}
+	else {
+		if (enableOverride) {
+		    writeObjectOverride($1);
+		    return;
+		}
+		try {
+		    writeObject0($1, false);
+		} 
+		catch (java.io.IOException ex) {
+		    if (depth == 0) {
+				writeFatalException(ex);
+		    }
+		    throw ex;
+		}
+	}	
+}
+catch (Exception e) {
+	e.printStackTrace();
+}		

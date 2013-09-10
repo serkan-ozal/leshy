@@ -16,12 +16,22 @@
 
 package tr.com.serkanozal.leshy.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+
 /**
  * @author Serkan ÖZAL
  */
 public class SerDeServiceFactory {
 
+	public static final ThreadLocal<Boolean> SERIALIZER_REDIRECT_LOCK = new ThreadLocal<Boolean>(); 
+	public static final ThreadLocal<Boolean> DESERIALIZER_REDIRECT_LOCK = new ThreadLocal<Boolean>(); 
+	
 	private static SerDeService serdeService = new SerDeServiceImpl();
+	
 	
 	private SerDeServiceFactory() {
 		
@@ -33,6 +43,40 @@ public class SerDeServiceFactory {
 	
 	public static void setSerdeService(SerDeService serdeService) {
 		SerDeServiceFactory.serdeService = serdeService;
+	}
+	
+	// Used by agent via reflection due to bootstrap classloader challange
+	public static void doSerialize(ObjectOutputStream oos, Object obj, OutputStream os) throws IOException {
+		serdeService.doSerialize(oos, obj, os);
+	}
+	
+	// Used by agent via reflection due to bootstrap classloader challange
+	public static Object doDeserialize(ObjectInputStream ois, InputStream is) throws IOException, ClassNotFoundException {
+		return serdeService.doDeserialize(ois, is);
+	}
+	
+	public static boolean isSerializerRedirectLocked() {
+		return SERIALIZER_REDIRECT_LOCK.get() != null;
+	}
+	
+	public static void lockSerializerRedirect() {
+		SERIALIZER_REDIRECT_LOCK.set(true);
+	}
+	
+	public static void unlockSerializerRedirect() {
+		SERIALIZER_REDIRECT_LOCK.remove();
+	}
+	
+	public static boolean isDeserializerRedirectLocked() {
+		return DESERIALIZER_REDIRECT_LOCK.get() != null;
+	}
+	
+	public static void lockDeserializerRedirect() {
+		DESERIALIZER_REDIRECT_LOCK.set(true);
+	}
+	
+	public static void unlockDeserializerRedirect() {
+		DESERIALIZER_REDIRECT_LOCK.remove();
 	}
 	
 }

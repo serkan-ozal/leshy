@@ -16,9 +16,11 @@
 
 package tr.com.serkanozal.leshy.service;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 
@@ -33,28 +35,61 @@ import tr.com.serkanozal.leshy.serde.SerDe;
  */
 public class SerDeServiceTest {
 
+	public static void main(String[] args) throws IOException {
+		new SerDeServiceTest().serializeAndDeserializeSuccessfully();
+	}
+	
 	@Test
 	public void serializeAndDeserializeSuccessfully() throws IOException {
-		SerDeService serdeService = SerDeServiceFactory.getSerdeService();
-		serdeService.
-			registerSerDe(new SerDeDispatcher(new ClassFilter(ClassToSerialize.class), new CustomSerDe())).
-			setup();
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ObjectOutputStream oos = new ObjectOutputStream(bos);
-		oos.writeObject(new ClassToSerialize());
-		bos.flush();
+		try{
+			SerDeService serdeService = SerDeServiceFactory.getSerdeService();
+			serdeService.
+				registerSerDe(new SerDeDispatcher(new ClassFilter(ClassToSerialize.class), new CustomSerDe())).
+				setup();
+			
+			ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			ObjectOutputStream oos = new ObjectOutputStream(bos);
+			oos.writeObject(new ClassToSerialize());
+			bos.flush();
+			
+			byte[] objectContent = bos.toByteArray();
+			
+			
+			ByteArrayInputStream bis = new ByteArrayInputStream(objectContent);
+			ObjectInputStream ois = new ObjectInputStream(bis);
+			ClassToSerialize obj = (ClassToSerialize) ois.readObject();
+			
+			System.out.println(obj);
+		}
+		catch (Throwable t) {
+			t.printStackTrace();
+		}
 	}
 	
 	private static class CustomSerDe implements SerDe {
 
 		@Override
-		public void serialize(Object obj, OutputStream os) {
+		public void serialize(Object obj, OutputStream os) throws IOException {
 			System.out.println("serialize");
+			try {
+				SerDeServiceFactory.lockSerializerRedirect();
+				new ObjectOutputStream(os).writeObject(obj);
+			}
+			finally {
+				SerDeServiceFactory.unlockSerializerRedirect();
+			}
 		}
 
 		@Override
-		public Object deserialize(InputStream is) {
-			return null;
+		public Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
+			System.out.println("deserialize");
+			try {
+				SerDeServiceFactory.lockDeserializerRedirect();
+				return new ObjectInputStream(is).readObject();
+			}
+			finally {
+				SerDeServiceFactory.unlockDeserializerRedirect();
+			}
 		}
 		
 	}
