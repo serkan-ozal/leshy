@@ -31,8 +31,7 @@ public class SerDeServiceFactory {
 	public static final ThreadLocal<Boolean> DESERIALIZER_REDIRECT_LOCK = new ThreadLocal<Boolean>(); 
 	
 	private static SerDeService serdeService = new SerDeServiceImpl();
-	
-	
+
 	private SerDeServiceFactory() {
 		
 	}
@@ -43,6 +42,10 @@ public class SerDeServiceFactory {
 	
 	public static void setSerdeService(SerDeService serdeService) {
 		SerDeServiceFactory.serdeService = serdeService;
+	}
+	
+	public static void turnToDefaultSerDeService() {
+		serdeService = new SerDeServiceImpl();
 	}
 	
 	// Used by agent via reflection due to bootstrap classloader challange

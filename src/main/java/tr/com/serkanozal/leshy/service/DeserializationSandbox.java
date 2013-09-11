@@ -16,28 +16,11 @@
 
 package tr.com.serkanozal.leshy.service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-
-import tr.com.serkanozal.leshy.dispatcher.SerDeDispatcher;
-
 /**
  * @author Serkan ÖZAL
  */
-public interface SerDeService {
+public interface DeserializationSandbox {
 
-	void setup();
-	void remove();
-	
-	SerDeService registerSerDe(SerDeDispatcher serdeDispatcher);
-
-	void doSerialize(ObjectOutputStream oos, Object obj, OutputStream os) throws IOException;
-	Object doDeserialize(ObjectInputStream ois, InputStream is) throws IOException, ClassNotFoundException;
-	
-	void runInSandbox(SerializationSandbox serializationSandbox);
-	Object runInSandbox(DeserializationSandbox deserializationSandbox);
+	Object runInSandbox();
 	
 }

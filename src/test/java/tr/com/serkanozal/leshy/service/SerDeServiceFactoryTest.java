@@ -16,9 +16,152 @@
 
 package tr.com.serkanozal.leshy.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+
+import junit.framework.Assert;
+
+import org.junit.Test;
+
+import tr.com.serkanozal.leshy.dispatcher.SerDeDispatcher;
+
 /**
  * @author Serkan ÖZAL
  */
 public class SerDeServiceFactoryTest {
+	
+	@Test
+	public void objectSerializedWithSpecifiedSerializer() throws IOException {
+		Integer i = new Integer(1);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		SerDeService serdeService = new SerDeService() {
+			
+			@Override
+			public void setup() {
+				
+			}
+
+			@Override
+			public void remove() {
+				
+			}
+
+			@Override
+			public SerDeService registerSerDe(SerDeDispatcher serdeDispatcher) {
+				return null;
+			}
+
+			@Override
+			public void doSerialize(ObjectOutputStream oos, Object obj, OutputStream os) throws IOException {
+				os.write(1);
+			}
+
+			@Override
+			public Object doDeserialize(ObjectInputStream ois, InputStream is) throws IOException, ClassNotFoundException {
+				return null;
+			}
+
+			@Override
+			public void runInSandbox(SerializationSandbox serializationSandbox) {
+				
+			}
+
+			@Override
+			public Object runInSandbox(DeserializationSandbox deserializationSandbox) {
+				return null;
+			}
+			
+		};
+		
+		SerDeServiceFactory.setSerdeService(serdeService);
+		
+		SerDeServiceFactory.doSerialize(null, i, bos);
+		
+		bos.flush();
+		
+		byte[] array = bos.toByteArray();
+		Assert.assertEquals(1, array.length);
+		Assert.assertEquals(1, array[0]);
+	}
+	
+	@Test
+	public void objectDeserializedWithSpecifiedDeserializer() throws IOException, ClassNotFoundException {
+		final Integer i = new Integer(1);
+		SerDeService serdeService = new SerDeService() {
+			
+			@Override
+			public void setup() {
+				
+			}
+
+			@Override
+			public void remove() {
+				
+			}
+
+			@Override
+			public SerDeService registerSerDe(SerDeDispatcher serdeDispatcher) {
+				return null;
+			}
+
+			@Override
+			public void doSerialize(ObjectOutputStream oos, Object obj, OutputStream os) throws IOException {
+				
+			}
+
+			@Override
+			public Object doDeserialize(ObjectInputStream ois, InputStream is) throws IOException, ClassNotFoundException {
+				return i;
+			}
+
+			@Override
+			public void runInSandbox(SerializationSandbox serializationSandbox) {
+				
+			}
+
+			@Override
+			public Object runInSandbox(DeserializationSandbox deserializationSandbox) {
+				return null;
+			}
+			
+		};
+		
+		SerDeServiceFactory.setSerdeService(serdeService);
+		
+		Integer deserializedI  = (Integer)SerDeServiceFactory.doDeserialize(null, new ByteArrayInputStream(new byte[1]));
+		
+		Assert.assertEquals(i, deserializedI);
+	}
+	
+	@Test
+	public void serializerRedirectLockManagedSuccessfully() {
+		Assert.assertFalse(SerDeServiceFactory.isSerializerRedirectLocked());
+		
+		SerDeServiceFactory.lockSerializerRedirect();
+		
+		Assert.assertTrue(SerDeServiceFactory.isSerializerRedirectLocked());
+		
+		SerDeServiceFactory.unlockSerializerRedirect();
+		
+		Assert.assertFalse(SerDeServiceFactory.isSerializerRedirectLocked());
+	}
+	
+	@Test
+	public void deserializerRedirectLockManagedSuccessfully() {
+		Assert.assertFalse(SerDeServiceFactory.isDeserializerRedirectLocked());
+		
+		SerDeServiceFactory.lockDeserializerRedirect();
+		
+		Assert.assertTrue(SerDeServiceFactory.isDeserializerRedirectLocked());
+		
+		SerDeServiceFactory.unlockDeserializerRedirect();
+		
+		Assert.assertFalse(SerDeServiceFactory.isDeserializerRedirectLocked());
+	}
 	
 }

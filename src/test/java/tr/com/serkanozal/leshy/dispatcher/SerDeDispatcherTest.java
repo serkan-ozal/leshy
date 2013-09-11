@@ -16,9 +16,88 @@
 
 package tr.com.serkanozal.leshy.dispatcher;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+
+import junit.framework.Assert;
+
+import org.easymock.EasyMock;
+import org.junit.Test;
+
+import tr.com.serkanozal.leshy.filter.Filter;
+import tr.com.serkanozal.leshy.serde.SerDe;
+
 /**
  * @author Serkan ÖZAL
  */
 public class SerDeDispatcherTest {
+	
+	@Test
+	public void specifiedFilterUsed() {
+		Integer i = new Integer(1);
+		Filter mockFilter = EasyMock.createMock(Filter.class);
+		EasyMock.expect(mockFilter.useObject(i)).andReturn(true);
+		EasyMock.replay(mockFilter);
+		Assert.assertTrue(new SerDeDispatcher(mockFilter, null).useObject(i));
+	}
+	
+	@Test
+	public void specifiedSerializerUsed() throws IOException {
+		Integer i = new Integer(1);
+		
+		Filter mockFilter = EasyMock.createMock(Filter.class);
+		EasyMock.expect(mockFilter.useObject(i)).andReturn(true);
+		EasyMock.replay(mockFilter);
+		
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		SerDe serDe = new SerDe() {
+			@Override
+			public void serialize(Object obj, OutputStream os) throws IOException {
+				os.write(1);
+			}
+			
+			@Override
+			public Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
+				return null;
+			}
+		};
+		
+		new SerDeDispatcher(mockFilter, serDe).dispatchToSerialize(i, bos);
+
+		bos.flush();
+		
+		byte[] array = bos.toByteArray();
+		Assert.assertEquals(1, array.length);
+		Assert.assertEquals(1, array[0]);
+	}
+	
+	@Test
+	public void specifiedDeserializerUsed() throws IOException, ClassNotFoundException {
+		final Integer i = new Integer(1);
+		
+		Filter mockFilter = EasyMock.createMock(Filter.class);
+		EasyMock.expect(mockFilter.useObject(i)).andReturn(true);
+		EasyMock.replay(mockFilter);
+		
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[1]);
+		SerDe serDe = new SerDe() {
+			@Override
+			public void serialize(Object obj, OutputStream os) throws IOException {
+				
+			}
+			
+			@Override
+			public Object deserialize(InputStream is) throws IOException, ClassNotFoundException {
+				return i;
+			}
+		};
+		
+		Integer deserializedI = (Integer)new SerDeDispatcher(mockFilter, serDe).dispatchToDeserialize(bis);
+
+		Assert.assertEquals(i, deserializedI);
+	}
 	
 }

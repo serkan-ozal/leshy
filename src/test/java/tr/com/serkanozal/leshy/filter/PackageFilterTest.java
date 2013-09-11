@@ -16,9 +16,23 @@
 
 package tr.com.serkanozal.leshy.filter;
 
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 /**
  * @author Serkan ÖZAL
  */
 public class PackageFilterTest {
 	
+	@Test
+	public void objectWhoseClassIsUnderSpecifiedPackageIsUsed() {
+		Assert.assertTrue(new PackageFilter("java.lang").useObject(new Integer(1)));
+	}
+	
+	@Test
+	public void objectWhoseClassIsNotUnderSpecifiedPackageIsNotUsed() {
+		Assert.assertFalse(new PackageFilter("java.io").useObject(new Integer(1)));
+	}
+
 }

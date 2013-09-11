@@ -16,22 +16,11 @@
 
 package tr.com.serkanozal.leshy.service;
 
-import java.io.Serializable;
-
 /**
  * @author Serkan ÖZAL
  */
-@SuppressWarnings({"serial", "unused"})
-public class ClassToSerialize implements Serializable {
+public interface SerializationSandbox {
 
-	private byte byteValue = 1;
-	private boolean booleanValue = true;
-	private char charValue = 'X';
-	private short shortValue = 10;
-	private int intValue = 100;
-	private float floatValue = 200.0F;
-	private long longValue = 1000;
-	private double doubleValue = 2000.0;
-	private String stringValue = "str";
+	void runInSandbox();
 	
 }

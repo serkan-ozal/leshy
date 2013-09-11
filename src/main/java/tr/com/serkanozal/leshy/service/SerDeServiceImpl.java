@@ -49,13 +49,6 @@ public class SerDeServiceImpl implements SerDeService {
 	private Map<String, SerDeDispatcher> serdeDispatcherMap = new HashMap<String, SerDeDispatcher>();
 
 	@Override
-	public SerDeService registerSerDe(SerDeDispatcher serdeDispatcher) {
-		serdeDispatcherList.add(serdeDispatcher);
-		serdeDispatcherMap.put(serdeDispatcher.getSerde().getClass().getName(), serdeDispatcher);
-		return this;
-	}
-	
-	@Override
 	public void setup() {
 		try {
             Jillegal.init();
@@ -90,9 +83,56 @@ public class SerDeServiceImpl implements SerDeService {
 	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
 		}
 		catch (Throwable t) {
-			logger.error("Error occured while building SerDe service", t);
+			logger.error("Error occured while setting up SerDe service", t);
 			throw new IllegalStateException(t);
 		}
+	}
+	
+	@Override
+	public void remove() {
+		try {
+            Jillegal.init();
+
+			final String writeObjectCode = 
+					IoUtil.getContentOfInputStream(IoUtil.getResourceAsStream("writeObject.txt"));
+			final String readObjectCode = 	
+					IoUtil.getContentOfInputStream(IoUtil.getResourceAsStream("readObject.txt"));
+			
+			InstrumenterService instrumenterService = InstrumenterServiceFactory.getInstrumenterService();
+			
+	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
+	        GeneratedClass<ObjectOutputStream> instrumentedObjectOutputStreamClass = 
+	        	objectOutputStreamInstrumenter.
+		        	updateMethod(
+		        		"writeObject", 
+		        		writeObjectCode, 
+		        		new Class<?>[] { Object.class }).
+		        	build();
+	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
+	        
+	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
+	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
+	            	objectInputStreamInstrumenter.
+	    	        	updateMethod(
+	    	        		"readObject", 
+	    	        		readObjectCode, 
+	    	        		new Class<?>[] { }).
+	    	        	build();
+	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while removing SerDe service", t);
+			throw new IllegalStateException(t);
+		}
+	}
+	
+	@Override
+	public SerDeService registerSerDe(SerDeDispatcher serdeDispatcher) {
+		serdeDispatcherList.add(serdeDispatcher);
+		serdeDispatcherMap.put(serdeDispatcher.getSerde().getClass().getName(), serdeDispatcher);
+		return this;
 	}
 
 	@Override
@@ -147,6 +187,28 @@ public class SerDeServiceImpl implements SerDeService {
 			finally {
 				SerDeServiceFactory.unlockDeserializerRedirect(); 
 			}
+		}
+	}
+	
+	@Override
+	public void runInSandbox(SerializationSandbox serializationSandbox) {
+		try {
+			SerDeServiceFactory.lockSerializerRedirect();
+			serializationSandbox.runInSandbox();
+		}
+		finally {
+			SerDeServiceFactory.unlockSerializerRedirect();
+		}
+	}
+	
+	@Override
+	public Object runInSandbox(DeserializationSandbox deserializationSandbox) {
+		try {
+			SerDeServiceFactory.lockDeserializerRedirect();
+			return deserializationSandbox.runInSandbox();
+		}
+		finally {
+			SerDeServiceFactory.unlockDeserializerRedirect();
 		}
 	}
 

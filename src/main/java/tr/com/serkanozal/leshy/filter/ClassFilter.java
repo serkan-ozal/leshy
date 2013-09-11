@@ -32,7 +32,7 @@ public class ClassFilter implements Filter {
 		if (obj == null) {
 			return false;
 		}
-		if (obj.getClass().equals(clazz)) {
+		if (clazz.isAssignableFrom(obj.getClass())) {
 			return true;
 		}
 		else {

@@ -1,0 +1,13 @@
+if (enableOverride) {
+	writeObjectOverride($1);
+	return;
+}
+try {
+	writeObject0($1, false);
+} 
+catch (java.io.IOException ex) {
+	if (depth == 0) {
+		writeFatalException(ex);
+	}
+	throw ex;
+}

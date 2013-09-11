@@ -16,9 +16,28 @@
 
 package tr.com.serkanozal.leshy.filter;
 
+import junit.framework.Assert;
+
+import org.junit.Test;
+
 /**
  * @author Serkan ÖZAL
  */
 public class ClassFilterTest {
+	
+	@Test
+	public void objectWhoseClassIsSameWithSpecifiedClassIsUsed() {
+		Assert.assertTrue(new ClassFilter(Integer.class).useObject(new Integer(1)));
+	}
+	
+	@Test
+	public void objectWhoseClassIsSubTypeOfSpecifiedClassIsUsed() {
+		Assert.assertTrue(new ClassFilter(Number.class).useObject(new Integer(1)));
+	}
+	
+	@Test
+	public void objectWhoseClassIsNotAssignableToSpecifiedClassIsNotUsed() {
+		Assert.assertFalse(new ClassFilter(Long.class).useObject(new Integer(1)));
+	}
 	
 }
