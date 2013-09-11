@@ -18,7 +18,7 @@
         <maven.resources.plugin.version>2.4</maven.resources.plugin.version>
         <maven.surefire.plugin.version>2.9</maven.surefire.plugin.version>
          
-        <jillegal.version>1.0.4-RELEASE</jillegal.version>
+        <jillegal.version>1.0.5-RELEASE</jillegal.version>
         <jcommon.version>1.0.0-RELEASE</jcommon.version>
 		<log4j.version>1.2.16</log4j.version>
 
