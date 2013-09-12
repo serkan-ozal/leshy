@@ -32,6 +32,9 @@ public interface SerDeService {
 	void setup();
 	void remove();
 	
+	void serializationOpenForAllTypes();
+	void serializationOpenOnlyForSerializableTypes();
+	
 	SerDeService registerSerDe(SerDeDispatcher serdeDispatcher);
 
 	void doSerialize(ObjectOutputStream oos, Object obj, OutputStream os) throws IOException;

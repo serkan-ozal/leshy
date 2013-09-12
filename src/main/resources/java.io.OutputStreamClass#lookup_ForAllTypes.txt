@@ -1,0 +1,78 @@
+try {  
+    	java.lang.reflect.Field localDescsField = Class.forName("java.io.OutputStreamClass$Caches").getField("localDescs");
+    	localDescsField.setAccessible(true);
+        java.util.concurrent.ConcurrentMap localDescs = localDescsField.get(null);
+        
+        java.lang.reflect.Field localDescsQueueField = Class.forName("java.io.OutputStreamClass$Caches").getField("localDescsQueue");
+    	localDescsQueueField.setAccessible(true);
+        java.lang.ref.ReferenceQueue localDescsQueue = localDescsQueueField.get(null);
+        
+        processQueue(localDescsQueue, localDescs);
+        WeakClassKey key = new WeakClassKey($2, localDescsQueue);
+        Reference ref = localDescs.get(key);
+        Object entry = null;
+        if (ref != null) {
+            entry = ref.get();
+        }
+        EntryFuture future = null;
+        if (entry == null) {
+            EntryFuture newEntry = new EntryFuture();
+            Reference newRef = new SoftReference(newEntry);
+            do {
+                if (ref != null) {
+                    localDescs.remove(key, ref);
+                }
+                ref = localDescs.putIfAbsent(key, newRef);
+                if (ref != null) {
+                    entry = ref.get();
+                }
+            } while (ref != null && entry == null);
+            if (entry == null) {
+                future = newEntry;
+            }
+        }
+
+        if (entry instanceof ObjectStreamClass) {  // check common case first
+            return (ObjectStreamClass) entry;
+        }
+        if (entry instanceof EntryFuture) {
+            future = (EntryFuture) entry;
+            if (future.getOwner() == Thread.currentThread()) {
+                /*
+                 * Handle nested call situation described by 4803747: waiting
+                 * for future value to be set by a lookup() call further up the
+                 * stack will result in deadlock, so calculate and set the
+                 * future value here instead.
+                 */
+                entry = null;
+            } else {
+                entry = future.get();
+            }
+        }
+        if (entry == null) {
+            try {
+                entry = new ObjectStreamClass($2);
+            } catch (Throwable th) {
+                entry = th;
+            }
+            if (future.set(entry)) {
+                localDescs.put(key, new SoftReference(entry));
+            } else {
+                // nested lookup call already set future
+                entry = future.get();
+            }
+        }
+
+        if (entry instanceof ObjectStreamClass) {
+            return (ObjectStreamClass) entry;
+        } else if (entry instanceof RuntimeException) {
+            throw (RuntimeException) entry;
+        } else if (entry instanceof Error) {
+            throw (Error) entry;
+        } else {
+            throw new InternalError("unexpected entry: " + entry);
+        }
+ }
+ catch (Throwable t) {
+ 	throw new RuntimeException(t);
+ }	       

@@ -1,0 +1,68 @@
+    if (!($2 || Serializable.class.isAssignableFrom($1))) {
+            return null;
+        }
+        processQueue(Caches.localDescsQueue, Caches.localDescs);
+        WeakClassKey key = new WeakClassKey($2, Caches.localDescsQueue);
+        Reference<?> ref = Caches.localDescs.get(key);
+        Object entry = null;
+        if (ref != null) {
+            entry = ref.get();
+        }
+        EntryFuture future = null;
+        if (entry == null) {
+            EntryFuture newEntry = new EntryFuture();
+            Reference<?> newRef = new SoftReference<EntryFuture>(newEntry);
+            do {
+                if (ref != null) {
+                    Caches.localDescs.remove(key, ref);
+                }
+                ref = Caches.localDescs.putIfAbsent(key, newRef);
+                if (ref != null) {
+                    entry = ref.get();
+                }
+            } while (ref != null && entry == null);
+            if (entry == null) {
+                future = newEntry;
+            }
+        }
+
+        if (entry instanceof ObjectStreamClass) {  // check common case first
+            return (ObjectStreamClass) entry;
+        }
+        if (entry instanceof EntryFuture) {
+            future = (EntryFuture) entry;
+            if (future.getOwner() == Thread.currentThread()) {
+                /*
+                 * Handle nested call situation described by 4803747: waiting
+                 * for future value to be set by a lookup() call further up the
+                 * stack will result in deadlock, so calculate and set the
+                 * future value here instead.
+                 */
+                entry = null;
+            } else {
+                entry = future.get();
+            }
+        }
+        if (entry == null) {
+            try {
+                entry = new ObjectStreamClass($2);
+            } catch (Throwable th) {
+                entry = th;
+            }
+            if (future.set(entry)) {
+                Caches.localDescs.put(key, new SoftReference<Object>(entry));
+            } else {
+                // nested lookup call already set future
+                entry = future.get();
+            }
+        }
+
+        if (entry instanceof ObjectStreamClass) {
+            return (ObjectStreamClass) entry;
+        } else if (entry instanceof RuntimeException) {
+            throw (RuntimeException) entry;
+        } else if (entry instanceof Error) {
+            throw (Error) entry;
+        } else {
+            throw new InternalError("unexpected entry: " + entry);
+        }

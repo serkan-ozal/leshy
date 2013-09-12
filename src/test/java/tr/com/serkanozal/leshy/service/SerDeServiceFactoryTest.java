@@ -50,6 +50,16 @@ public class SerDeServiceFactoryTest {
 			public void remove() {
 				
 			}
+			
+			@Override
+			public void serializationOpenForAllTypes() {
+				
+			}
+
+			@Override
+			public void serializationOpenOnlyForSerializableTypes() {
+				
+			}
 
 			@Override
 			public SerDeService registerSerDe(SerDeDispatcher serdeDispatcher) {
@@ -75,7 +85,6 @@ public class SerDeServiceFactoryTest {
 			public Object runInSandbox(DeserializationSandbox deserializationSandbox) {
 				return null;
 			}
-			
 		};
 		
 		SerDeServiceFactory.setSerdeService(serdeService);
@@ -101,6 +110,16 @@ public class SerDeServiceFactoryTest {
 
 			@Override
 			public void remove() {
+				
+			}
+			
+			@Override
+			public void serializationOpenForAllTypes() {
+				
+			}
+
+			@Override
+			public void serializationOpenOnlyForSerializableTypes() {
 				
 			}
 

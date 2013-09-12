@@ -1,0 +1,93 @@
+boolean oldMode = bout.setBlockDataMode(false);
+depth++;
+try {
+	// handle previously written and non-replaceable objects
+	int h;
+	if (($1 = subs.lookup($1)) == null) {
+		writeNull();
+		return;
+	} 
+	else if (!$2 && (h = handles.lookup($1)) != -1) {
+		writeHandle(h);
+		return;
+	} 
+	else if ($1 instanceof Class) {
+		writeClass((Class) $1, $2);
+		return;
+	} 
+	else if ($1 instanceof ObjectStreamClass) {
+		writeClassDesc((ObjectStreamClass) $1, $2);
+		return;
+	}
+
+	// check for replacement object
+	Object orig = $1;
+	Class cl = $1.getClass();
+	ObjectStreamClass desc;
+	for (;;) {
+		// REMIND: skip this check for strings/arrays?
+		Class repCl;
+		desc = ObjectStreamClass.lookup(cl, true);
+		if (!desc.hasWriteReplaceMethod() ||
+				($1 = desc.invokeWriteReplace($1)) == null ||
+				(repCl = $1.getClass()) == cl) {
+			break;
+		}
+		cl = repCl;
+	}
+	if (enableReplace) {
+		Object rep = replaceObject($1);
+		if (rep != $1 && rep != null) {
+			cl = rep.getClass();
+			desc = ObjectStreamClass.lookup(cl, true);
+		}
+		$1 = rep;
+	}
+
+	// if object replaced, run through original checks a second time
+	if ($1 != orig) {
+		subs.assign(orig, $1);
+		if ($1 == null) {
+			writeNull();
+			return;
+		} 
+		else if (!$2 && (h = handles.lookup($1)) != -1) {
+			writeHandle(h);
+			return;
+		} 
+		else if ($1 instanceof Class) {
+			writeClass((Class) $1, $2);
+			return;
+		} 
+		else if ($1 instanceof ObjectStreamClass) {
+			writeClassDesc((ObjectStreamClass) $1, $2);
+			return;
+		}
+	}
+
+	// remaining cases
+	if ($1 instanceof String) {
+		writeString((String) $1, $2);
+	} 
+	else if (cl.isArray()) {
+		writeArray($1, desc, $2);
+	} 
+	else if ($1 instanceof Enum) {
+		writeEnum((Enum) $1, desc, $2);
+	} 
+	else if ($1 instanceof Serializable) {
+		writeOrdinaryObject($1, desc, $2);
+	} 
+	else {
+		if (extendedDebugInfo) {
+			throw new NotSerializableException(cl.getName() + "\n" + debugInfoStack.toString());
+		} 
+		else {
+			throw new NotSerializableException(cl.getName());
+		}
+	}
+} 
+finally {
+	depth--;
+	bout.setBlockDataMode(oldMode);
+}

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.ObjectStreamClass;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,6 +125,95 @@ public class SerDeServiceImpl implements SerDeService {
 		}
 		catch (Throwable t) {
 			logger.error("Error occured while removing SerDe service", t);
+			throw new IllegalStateException(t);
+		}
+	}
+	
+	@Override
+	public void serializationOpenForAllTypes() {
+		try {
+            Jillegal.init();
+            
+            InstrumenterService instrumenterService = InstrumenterServiceFactory.getInstrumenterService();
+            
+            final String writeObject0Code = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.ObjectOutputStream#writeObject0_ForAllTypes.txt"));
+
+	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
+	        GeneratedClass<ObjectOutputStream> instrumentedObjectOutputStreamClass = 
+	        	objectOutputStreamInstrumenter.
+	        		addAdditionalClass(ObjectStreamClass.class).
+		        	updateMethod(
+		        		"writeObject0", 
+		        		"{" + writeObject0Code + "}", 
+		        		new Class<?>[] { Object.class, boolean.class }).
+		        	build();
+	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
+            
+            
+	        
+	        final String readOrdinaryObjectCode = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.ObjectInputStreamClass#readOrdinaryObject_ForAllTypes.txt"));
+
+	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
+	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
+	        		objectInputStreamInstrumenter.
+		        	updateMethod(
+		        		"readOrdinaryObject", 
+		        		"{" + readOrdinaryObjectCode + "}", 
+		        		new Class<?>[] { boolean.class }).
+		        	build();
+	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
+
+//			final String lookupCode = 
+//					IoUtil.getContentOfInputStream(
+//							IoUtil.getResourceAsStream("java.io.OutputStreamClass#lookup_ForAllTypes.txt"));
+//
+//	        Instrumenter<ObjectStreamClass> objectStreamClassInstrumenter = 
+//	        		instrumenterService.getInstrumenter(ObjectStreamClass.class);
+//	        GeneratedClass<ObjectStreamClass> instrumentedObjectStreamClass = 
+//	        		objectStreamClassInstrumenter.
+//		        	updateMethod(
+//		        		"lookup", 
+//		        		"{" + lookupCode + "}", 
+//		        		new Class<?>[] { Class.class, boolean.class }).
+//		        	build();
+//	        instrumenterService.redefineClass(instrumentedObjectStreamClass);
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while updating serialization for all types", t);
+			throw new IllegalStateException(t);
+		}
+	}
+	
+	@Override
+	public void serializationOpenOnlyForSerializableTypes() {
+		try {
+            Jillegal.init();
+
+			final String writeObject0Code = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.ObjectOutputStream#writeObject0_ForSerializableTypes.txt"));
+			
+			InstrumenterService instrumenterService = InstrumenterServiceFactory.getInstrumenterService();
+			
+	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
+	        GeneratedClass<ObjectOutputStream> instrumentedObjectOutputStreamClass = 
+	        	objectOutputStreamInstrumenter.
+		        	updateMethod(
+		        		"writeObject0", 
+		        		writeObject0Code, 
+		        		new Class<?>[] { Object.class, boolean.class }).
+		        	build();
+	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
+		}
+		catch (Throwable t) {
+			logger.error("Error occured while updating serialization only for Serializable types", t);
 			throw new IllegalStateException(t);
 		}
 	}
