@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
@@ -64,6 +63,31 @@ public class LeshySerializationDeserializationDemoForUnserializableType {
 		System.out.println(deserializedObject);
 		System.out.println("\n");
 	}
+	
+	public static class UnserializableSmallClass {
+		
+		private static final Random RANDOM = new SecureRandom();
+		
+		private byte byteValue = 1;
+		private boolean booleanValue = true;
+		private char charValue = 'X';
+		
+		public UnserializableSmallClass randomize() {
+			byteValue = (byte) RANDOM.nextInt(256);
+			booleanValue = RANDOM.nextBoolean();
+			charValue = (char) RANDOM.nextInt(65536);
+			
+			return this;
+		}	
+		
+		@Override
+		public String toString() {
+			return
+				"\tbyteValue    : " + byteValue 		+ "\n" +
+				"\tbooleanValue : " + booleanValue 	+ "\n" +
+				"\tcharValue    : " + charValue;
+		}
+	}
 
 	public static class UnserializableClass {
 
@@ -78,6 +102,7 @@ public class LeshySerializationDeserializationDemoForUnserializableType {
 		private long longValue = 1000;
 		private double doubleValue = 2000.0;
 		private String stringValue = "str";
+		private UnserializableSmallClass smallClass = new UnserializableSmallClass();
 
 		public UnserializableClass randomize() {
 			byteValue = (byte) RANDOM.nextInt(256);
@@ -89,6 +114,7 @@ public class LeshySerializationDeserializationDemoForUnserializableType {
 			longValue = RANDOM.nextLong();
 			doubleValue = RANDOM.nextDouble();
 			stringValue = UUID.randomUUID().toString();
+			smallClass = smallClass.randomize();
 			
 			return this;
 		}	
@@ -104,7 +130,8 @@ public class LeshySerializationDeserializationDemoForUnserializableType {
 				"floatValue   : " + floatValue 		+ "\n" +
 				"longValue    : " + longValue 		+ "\n" +
 				"doubleValue  : " + doubleValue 	+ "\n" +
-				"stringValue  : " + stringValue;
+				"stringValue  : " + stringValue 	+ "\n" +
+				"smallClass   : \n" + smallClass;
 		}
 		
 	}

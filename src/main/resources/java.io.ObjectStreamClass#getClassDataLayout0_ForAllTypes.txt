@@ -1,0 +1,42 @@
+java.util.ArrayList slots = new java.util.ArrayList();
+java.lang.Class start = cl, end = cl.getSuperclass(); // Hacked by Serkan OZAL
+
+// Hacked by Serkan OZAL
+/*
+//locate closest non-serializable superclass
+while (end != null && java.io.Serializable.class.isAssignableFrom(end)) {
+	end = end.getSuperclass();
+}
+*/
+
+for (java.io.ObjectStreamClass d = this; d != null; d = d.superDesc) {
+	// search up inheritance hierarchy for class with matching name
+	String searchName = (d.cl != null) ? d.cl.getName() : d.name;
+	java.lang.Class match = null;
+	for (Class c = start; c != end; c = c.getSuperclass()) {
+		if (searchName.equals(c.getName())) {
+			match = c;
+			break;
+		}
+	}
+
+	// add "no data" slot for each unmatched class below match
+	if (match != null) {
+		for (java.lang.Class c = start; c != match; c = c.getSuperclass()) {
+			slots.add(new java.io.ObjectStreamClass.ClassDataSlot(java.io.ObjectStreamClass.lookup(c, true), false));
+		}
+		start = match.getSuperclass();
+	}
+
+	// record descriptor/class pairing
+    slots.add(new java.io.ObjectStreamClass.ClassDataSlot(d.getVariantFor(match), true));
+}
+
+// add "no data" slot for any leftover unmatched classes
+for (java.lang.Class c = start; c != end; c = c.getSuperclass()) {
+	slots.add(new java.io.ObjectStreamClass.ClassDataSlot(java.io.ObjectStreamClass.lookup(c, true), false));
+}
+
+// order slots from superclass -> subclass
+java.util.Collections.reverse(slots);
+return slots.toArray(new java.io.ObjectStreamClass.ClassDataSlot[slots.size()]);

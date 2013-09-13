@@ -1,0 +1,14 @@
+ObjectStreamField[] fields;
+if (// Hacked by Serkan OZAL //java.io.Serializable.class.isAssignableFrom($1) && 
+	    !java.io.Externalizable.class.isAssignableFrom($1) &&
+	    !java.lang.reflect.Proxy.isProxyClass($1) &&
+	    !$1.isInterface()) {
+	if ((fields = getDeclaredSerialFields($1)) == null) {
+		fields = getDefaultSerialFields($1);
+	}
+	java.util.Arrays.sort(fields);
+} 
+else {
+	fields = NO_FIELDS;
+}
+return fields;

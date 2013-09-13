@@ -75,6 +75,20 @@ try {
 	else if ($1 instanceof Enum) {
 		writeEnum((Enum) $1, desc, $2);
 	} 
+	// Hacked by Serkan OZAL
+	/*
+	else if ($1 instanceof Serializable) {
+		writeOrdinaryObject($1, desc, $2);
+	} 
+	else {
+		if (extendedDebugInfo) {
+			throw new NotSerializableException(cl.getName() + "\n" + debugInfoStack.toString());
+		} 
+		else {
+			throw new NotSerializableException(cl.getName());
+		}
+	}
+	*/
 	writeOrdinaryObject($1, desc, $2);
 } 
 finally {

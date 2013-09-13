@@ -115,12 +115,12 @@ public class SerDeServiceImpl implements SerDeService {
 	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
 	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
 	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
-	            	objectInputStreamInstrumenter.
-	    	        	updateMethod(
-	    	        		"readObject", 
-	    	        		readObjectCode, 
-	    	        		new Class<?>[] { }).
-	    	        	build();
+	            objectInputStreamInstrumenter.
+	    	        updateMethod(
+	    	        	"readObject", 
+	    	        	readObjectCode, 
+	    	        	new Class<?>[] { }).
+	    	        build();
 	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
 		}
 		catch (Throwable t) {
@@ -131,6 +131,15 @@ public class SerDeServiceImpl implements SerDeService {
 	
 	@Override
 	public void serializationOpenForAllTypes() {
+		manageSerializationMode("All");
+	}
+	
+	@Override
+	public void serializationOpenOnlyForSerializableTypes() {
+		manageSerializationMode("Serializable");
+	}
+	
+	private void manageSerializationMode(String type) {
 		try {
             Jillegal.init();
             
@@ -138,7 +147,7 @@ public class SerDeServiceImpl implements SerDeService {
             
             final String writeObject0Code = 
 					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.ObjectOutputStream#writeObject0_ForAllTypes.txt"));
+							IoUtil.getResourceAsStream("java.io.ObjectOutputStream#writeObject0_For" + type + "Types.txt"));
 
 	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
 	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
@@ -151,34 +160,20 @@ public class SerDeServiceImpl implements SerDeService {
 		        		new Class<?>[] { Object.class, boolean.class }).
 		        	build();
 	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
-            
-            
-	        
-//	        final String readOrdinaryObjectCode = 
-//					IoUtil.getContentOfInputStream(
-//							IoUtil.getResourceAsStream("java.io.ObjectInputStreamClass#readOrdinaryObject_ForAllTypes.txt"));
-//
-//	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
-//	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
-//	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
-//	        		objectInputStreamInstrumenter.
-//		        	updateMethod(
-//		        		"readOrdinaryObject", 
-//		        		"{" + readOrdinaryObjectCode + "}", 
-//		        		new Class<?>[] { boolean.class }).
-//		        	build();
-//	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
 
 	        final String constructorCode = 
 					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.OutputStreamClass#ObjectStreamClass_ForAllTypes.txt"));
+							IoUtil.getResourceAsStream("java.io.ObjectStreamClass#ObjectStreamClass_For" + type + "Types.txt"));
 			final String lookupCode = 
 					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.OutputStreamClass#lookup_ForAllTypes.txt"));
+							IoUtil.getResourceAsStream("java.io.ObjectStreamClass#lookup_For" + type + "Types.txt"));
 			final String getSerialFieldsCode = 
 					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.OutputStreamClass#getSerialFields_ForAllTypes.txt"));
-			 
+							IoUtil.getResourceAsStream("java.io.ObjectStreamClass#getSerialFields_For" + type + "Types.txt"));
+			final String getClassDataLayout0Code = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.ObjectStreamClass#getClassDataLayout0_For" + type + "Types.txt"));
+			
 	        Instrumenter<ObjectStreamClass> objectStreamClassInstrumenter = 
 	        		instrumenterService.getInstrumenter(ObjectStreamClass.class);
 	        GeneratedClass<ObjectStreamClass> instrumentedObjectStreamClass = 
@@ -194,39 +189,15 @@ public class SerDeServiceImpl implements SerDeService {
 				        "getSerialFields", 
 				        "{" + getSerialFieldsCode + "}", 
 				        new Class<?>[] { Class.class }).
+				    updateMethod(
+				        "getClassDataLayout0", 
+				        "{" + getClassDataLayout0Code + "}", 
+				        new Class<?>[] { }).
 		        	build();
 	        instrumenterService.redefineClass(instrumentedObjectStreamClass);
 		}
 		catch (Throwable t) {
-			logger.error("Error occured while updating serialization for all types", t);
-			throw new IllegalStateException(t);
-		}
-	}
-	
-	@Override
-	public void serializationOpenOnlyForSerializableTypes() {
-		try {
-            Jillegal.init();
-
-			final String writeObject0Code = 
-					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.ObjectOutputStream#writeObject0_ForSerializableTypes.txt"));
-			
-			InstrumenterService instrumenterService = InstrumenterServiceFactory.getInstrumenterService();
-			
-	        Instrumenter<ObjectOutputStream> objectOutputStreamInstrumenter = 
-	        		instrumenterService.getInstrumenter(ObjectOutputStream.class);
-	        GeneratedClass<ObjectOutputStream> instrumentedObjectOutputStreamClass = 
-	        	objectOutputStreamInstrumenter.
-		        	updateMethod(
-		        		"writeObject0", 
-		        		writeObject0Code, 
-		        		new Class<?>[] { Object.class, boolean.class }).
-		        	build();
-	        instrumenterService.redefineClass(instrumentedObjectOutputStreamClass);
-		}
-		catch (Throwable t) {
-			logger.error("Error occured while updating serialization only for Serializable types", t);
+			logger.error("Error occured while updating serialization for " + type.toLowerCase() + " types", t);
 			throw new IllegalStateException(t);
 		}
 	}
