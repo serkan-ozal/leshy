@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="Leshy : Leshy is a framework for replacing default Java serialization with your custom implementation on the fly without any code change in your application by using Java Instrumentation API.  " />
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Leshy</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/serkan-ozal/leshy">View on GitHub</a>
+
+          <h1 id="project_title">Leshy</h1>
+          <h2 id="project_tagline">Leshy is a framework for replacing default Java serialization with your custom implementation on the fly without any code change in your application by using Java Instrumentation API.  </h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/serkan-ozal/leshy/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/serkan-ozal/leshy/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h2>
+<a name="what-is-leshy" class="anchor" href="#what-is-leshy"><span class="octicon octicon-link"></span></a><strong>What is Leshy?</strong>
+</h2>
+
+<p><em>Leshy</em> is a framework for replacing default Java serialization with your custom implementation on the fly without any code change in your application by using <em>Java Instrumentation API</em>. Leshy doesn't require any startup parameter for using <em>Java Instrumentation API</em>. It loads its java agent on the fly when it is needed. With Leshy, you can customize and intercept Java serialization/deserialization logic on the fly. Suppose that you are working on a project and serialization/deserialization codes are splitted into all code by using <strong>"java.io.ObjectOutputStream"</strong> for serialization and <strong>"java.io.ObjectInputStream"</strong> for deserialization. With <em>Leshy</em> you can replace all serialization/deserialization logic with zero code change in your application. </p>
+
+<h2>
+<a name="what-does-leshy-mean" class="anchor" href="#what-does-leshy-mean"><span class="octicon octicon-link"></span></a><strong>What does Leshy mean?</strong>
+</h2>
+
+<p>The Leshy is a male woodland spirit in Slavic mythology who protects wild animals and forests.</p>
+
+<h2>
+<a name="what-features-does-leshy-have" class="anchor" href="#what-features-does-leshy-have"><span class="octicon octicon-link"></span></a><strong>What features does Leshy have?</strong>
+</h2>
+
+<ul>
+<li><p>You can inject your custom serializer/deserializers to default Java serialization/deserialization flow by specifying their conditions for using.</p></li>
+<li><p>You can use default Java serialization/deserialization logic in your custom  serialization/deserialization flow.</p></li>
+<li><p>You can switch JVM to default serialization/deserialization flow on the fly.</p></li>
+<li><p>You can enable "serialization for all types" mode and so all non serializable classes (not implements <strong>"java.io.Serializable"</strong> interface) can be serialized/deserialized by default Java serialization/deserialization flow with no code change.</p></li>
+</ul><h2>
+<a name="install" class="anchor" href="#install"><span class="octicon octicon-link"></span></a><strong>Install</strong>
+</h2>
+
+<p>In your <strong>pom.xml</strong>, you must add repository and dependency for <em>Leshy</em>. 
+You can change <strong>"leshy.version"</strong> to any existing <em>Leshy</em> library version.</p>
+
+<pre><code>...
+&lt;properties&gt;
+    ...
+    &lt;leshy.version&gt;1.0.0-RELEASE&lt;/leshy.version&gt;
+    ...
+&lt;/properties&gt;
+...
+&lt;dependencies&gt;
+    ...
+    &lt;dependency&gt;
+        &lt;groupId&gt;tr.com.serkanozal&lt;/groupId&gt;
+        &lt;artifactId&gt;leshy&lt;/artifactId&gt;
+        &lt;version&gt;${leshy.version}&lt;/version&gt;
+    &lt;/dependency&gt;
+    ...
+&lt;/dependencies&gt;
+...
+&lt;repositories&gt;
+    ...
+    &lt;repository&gt;
+        &lt;id&gt;serkanozal-maven-repository&lt;/id&gt;
+        &lt;url&gt;https://github.com/serkan-ozal/maven-repository/raw/master/&lt;/url&gt;
+    &lt;/repository&gt;
+    ...
+&lt;/repositories&gt;
+...
+</code></pre>
+
+<h2>
+<a name="leshy-with-simple-examples" class="anchor" href="#leshy-with-simple-examples"><span class="octicon octicon-link"></span></a><strong>Leshy with simple examples</strong>
+</h2>
+
+<h3>
+<a name="custom-serializationdeserialization-examples" class="anchor" href="#custom-serializationdeserialization-examples"><span class="octicon octicon-link"></span></a><strong>Custom Serialization/Deserialization Examples</strong>
+</h3>
+
+<p>Here is <strong>"ClassToSerialize"</strong> class to using in serialization/deserialization samples:  </p>
+
+<pre><code>public class ClassToSerialize implements Serializable {
+
+    ...
+
+    private byte byteValue = 1;
+    private boolean booleanValue = true;
+    private char charValue = 'X';
+    private short shortValue = 10;
+    private int intValue = 100;
+    private float floatValue = 200.0F;
+    private long longValue = 1000;
+    private double doubleValue = 2000.0;
+    private String stringValue = "str";
+
+    ...
+
+} 
+</code></pre>
+
+<p>In this demo, our custom serialization/deserialization logic is injected only for <strong>"ClassToSerialize"</strong> class.</p>
+
+<pre><code>public class LeshySerializationDeserializationDemoWithCustomSerializationLogic {
+
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
+        serializeAndDeserializeByUsingCustomSerializationLogicWithCustomSerDe();
+    }
+
+    public static void serializeAndDeserializeByUsingCustomSerializationLogicWithCustomSerDe() throws IOException, ClassNotFoundException {
+        SerDeService serdeService = SerDeServiceFactory.getSerdeService();
+        serdeService.
+            registerSerDe(
+                new SerDeDispatcher(
+                    new ClassFilter(ClassToSerialize.class), 
+                    new CustomSerDe())).
+            setup();
+
+        ClassToSerialize serializedObject = new ClassToSerialize().randomize();
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(bos);
+        oos.writeObject(serializedObject);
+        bos.flush();
+
+        byte[] objectContent = bos.toByteArray();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(objectContent);
+        ObjectInputStream ois = new ObjectInputStream(bis);
+        ClassToSerialize deserializedObject = (ClassToSerialize) ois.readObject();
+    }
+
+    private static class CustomSerDe implements SerDe {
+
+        @Override
+        public void serialize(final Object obj, final OutputStream os) throws IOException {
+            // Write your custom serialization logic
+        }
+
+        @Override
+        public Object deserialize(final InputStream is) throws IOException, ClassNotFoundException {
+        // Write your custom deserialization logic
+        }
+
+    }
+
+} 
+</code></pre>
+
+<p>This demo is about using default Java serialization/deserialization logic in our custom serialization/deserialization logic.</p>
+
+<pre><code>public class CustomSerDe implements SerDe {
+
+    private SerDeService serdeService;
+
+    public CustomSerDe(SerDeService serdeService) {
+        this.serdeService = serdeService;
+    }
+
+    @Override
+    public void serialize(final Object obj, final OutputStream os) throws IOException {
+        serdeService.runInSandbox(
+            new SerializationSandbox() {
+                @Override
+                public void runInSandbox() {
+                    try {
+                        new ObjectOutputStream(os).writeObject(obj);
+                    }
+                    catch (Throwable t) {
+                        t.printStackTrace();
+                        throw new RuntimeException(t);
+                    }
+                }
+            }
+        );
+    }
+
+    @Override
+    public Object deserialize(final InputStream is) throws IOException, ClassNotFoundException {
+        return 
+            serdeService.runInSandbox(
+                new DeserializationSandbox() {
+                    @Override
+                    public Object runInSandbox() {
+                        try {
+                            return new ObjectInputStream(is).readObject();
+                        } 
+                        catch (Throwable t) {
+                            t.printStackTrace();
+                            throw new RuntimeException(t);
+                        }
+                    }
+                }
+            );
+    }   
+} 
+</code></pre>
+
+<h3>
+<a name="hacking-jvm-for-serialize-and-deserialize-non-serializable-classes" class="anchor" href="#hacking-jvm-for-serialize-and-deserialize-non-serializable-classes"><span class="octicon octicon-link"></span></a><strong>Hacking JVM for Serialize and Deserialize Non-Serializable Classes</strong>
+</h3>
+
+<p>Here is <strong>"UnserializableClass"</strong> class (note that not implements <strong>"java.io.Serializable"</strong> interface) for using in "serialization for all type" mode sample:  </p>
+
+<pre><code>public class UnserializableClass {
+
+    ...
+
+    private byte byteValue = 1;
+    private boolean booleanValue = true;
+    private char charValue = 'X';
+    private short shortValue = 10;
+    private int intValue = 100;
+    private float floatValue = 200.0F;
+    private long longValue = 1000;
+    private double doubleValue = 2000.0;
+    private String stringValue = "str";
+
+    ...
+
+}  
+</code></pre>
+
+<p>Default Java serialization/deserialization flow doesn't allow using non-serializable classes (not implements <strong>"java.io.Serializable"</strong> interface). But with Leshy's "serialization for all types" mode, JVM is hacked and all classes (serializable or non-serializable) can be serialized or deserialized by default Java serialization/deserialization flow. In addition, you can invert JVM to default mode with <em>Leshy</em> on the fly.</p>
+
+<pre><code>SerDeService serdeService = SerDeServiceFactory.getSerdeService();
+serdeService.serializationOpenForAllTypes();
+
+UnserializableClass serializedObject = new UnserializableClass().randomize();
+
+ByteArrayOutputStream bos = new ByteArrayOutputStream();
+ObjectOutputStream oos = new ObjectOutputStream(bos);
+oos.writeObject(serializedObject);
+bos.flush();
+
+byte[] objectContent = bos.toByteArray();
+
+ByteArrayInputStream bis = new ByteArrayInputStream(objectContent);
+ObjectInputStream ois = new ObjectInputStream(bis);
+UnserializableClass deserializedObject = (UnserializableClass) ois.readObject();
+
+serdeService.serializationOpenOnlyForSerializableTypes();
+</code></pre>
+
+<p>You can find all demo codes (including these samples above) at <a href="https://github.com/serkan-ozal/leshy/tree/master/src/test/java/tr/com/serkanozal/leshy/demo">https://github.com/serkan-ozal/leshy/tree/master/src/test/java/tr/com/serkanozal/leshy/demo</a></p>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Leshy maintained by <a href="https://github.com/serkan-ozal">serkan-ozal</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
