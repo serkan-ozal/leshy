@@ -1,0 +1,73 @@
+this.cl = $1;
+	name = cl.getName();
+	isProxy = java.lang.reflect.Proxy.isProxyClass(cl);
+	isEnum = java.lang.Enum.class.isAssignableFrom(cl);
+	serializable = true; //Serializable.class.isAssignableFrom(cl);
+	externalizable = java.io.Externalizable.class.isAssignableFrom(cl);
+
+	java.lang.Class superCl = cl.getSuperclass();
+	superDesc = (superCl != null) ? lookup(superCl, false) : null;
+	localDesc = this;
+
+	if (serializable) {
+	    			if (isEnum) {
+						suid = java.lang.Long.valueOf(0L);
+						fields = NO_FIELDS;
+						//return null;
+		   	 		}
+		   	 		else if (cl.isArray()) {
+						fields = NO_FIELDS;
+						//return null;
+		    		}
+					else {
+			    		suid = getDeclaredSUID(cl);
+			    		try {
+							fields = getSerialFields(cl);
+							computeFieldOffsets();
+			    		} 
+			    		catch (InvalidClassException e) {
+							serializeEx = deserializeEx = e;
+							fields = NO_FIELDS;
+			    		}
+			    
+			    		if (externalizable) {
+							cons = getExternalizableConstructor(cl);
+			    		} 
+			    		else {
+							cons = getSerializableConstructor(cl);
+							writeObjectMethod = getPrivateMethod(cl, "writeObject", new Class[] { java.io.ObjectOutputStream.class }, Void.TYPE);
+							readObjectMethod = getPrivateMethod(cl, "readObject", new Class[] { java.io.ObjectInputStream.class }, Void.TYPE);
+							readObjectNoDataMethod = getPrivateMethod(cl, "readObjectNoData", null, Void.TYPE);
+							hasWriteObjectData = (writeObjectMethod != null);
+			    		}
+			    		writeReplaceMethod = getInheritableMethod(cl, "writeReplace", null, Object.class);
+			    		readResolveMethod = getInheritableMethod(cl, "readResolve", null, Object.class);
+		    			//return null;
+		    		}	
+	} 
+	else {
+	    suid = java.lang.Long.valueOf(0L);
+	    fields = NO_FIELDS;
+	}
+
+	try {
+	    fieldRefl = getReflector(fields, this);
+	} 
+	catch (java.io.InvalidClassException ex) {
+	    // field mismatches impossible when matching local fields vs. self
+	    throw new InternalError();
+	}
+
+	if (deserializeEx == null) {
+	    if (isEnum) {
+			deserializeEx = new java.io.InvalidClassException(name, "enum type");
+	    } 
+	    else if (cons == null) {
+			deserializeEx = new java.io.InvalidClassException(name, "no valid constructor");
+	    }
+	}
+	for (int i = 0; i < fields.length; i++) {
+	    if (fields[i].getField() == null) {
+			defaultSerializeEx = new java.io.InvalidClassException(name, "unmatched serializable field(s) declared");
+	    }
+	}

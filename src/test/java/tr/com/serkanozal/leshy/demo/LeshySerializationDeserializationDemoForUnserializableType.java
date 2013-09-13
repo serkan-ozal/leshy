@@ -21,6 +21,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.util.Random;
 import java.util.UUID;
@@ -63,7 +64,7 @@ public class LeshySerializationDeserializationDemoForUnserializableType {
 		System.out.println(deserializedObject);
 		System.out.println("\n");
 	}
-	
+
 	public static class UnserializableClass {
 
 		private static final Random RANDOM = new SecureRandom();

@@ -154,35 +154,48 @@ public class SerDeServiceImpl implements SerDeService {
             
             
 	        
-	        final String readOrdinaryObjectCode = 
-					IoUtil.getContentOfInputStream(
-							IoUtil.getResourceAsStream("java.io.ObjectInputStreamClass#readOrdinaryObject_ForAllTypes.txt"));
-
-	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
-	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
-	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
-	        		objectInputStreamInstrumenter.
-		        	updateMethod(
-		        		"readOrdinaryObject", 
-		        		"{" + readOrdinaryObjectCode + "}", 
-		        		new Class<?>[] { boolean.class }).
-		        	build();
-	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
-
-//			final String lookupCode = 
+//	        final String readOrdinaryObjectCode = 
 //					IoUtil.getContentOfInputStream(
-//							IoUtil.getResourceAsStream("java.io.OutputStreamClass#lookup_ForAllTypes.txt"));
+//							IoUtil.getResourceAsStream("java.io.ObjectInputStreamClass#readOrdinaryObject_ForAllTypes.txt"));
 //
-//	        Instrumenter<ObjectStreamClass> objectStreamClassInstrumenter = 
-//	        		instrumenterService.getInstrumenter(ObjectStreamClass.class);
-//	        GeneratedClass<ObjectStreamClass> instrumentedObjectStreamClass = 
-//	        		objectStreamClassInstrumenter.
+//	        Instrumenter<ObjectInputStream> objectInputStreamInstrumenter = 
+//	        		instrumenterService.getInstrumenter(ObjectInputStream.class);
+//	        GeneratedClass<ObjectInputStream> instrumentedObjectInputStreamClass = 
+//	        		objectInputStreamInstrumenter.
 //		        	updateMethod(
-//		        		"lookup", 
-//		        		"{" + lookupCode + "}", 
-//		        		new Class<?>[] { Class.class, boolean.class }).
+//		        		"readOrdinaryObject", 
+//		        		"{" + readOrdinaryObjectCode + "}", 
+//		        		new Class<?>[] { boolean.class }).
 //		        	build();
-//	        instrumenterService.redefineClass(instrumentedObjectStreamClass);
+//	        instrumenterService.redefineClass(instrumentedObjectInputStreamClass);
+
+	        final String constructorCode = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.OutputStreamClass#ObjectStreamClass_ForAllTypes.txt"));
+			final String lookupCode = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.OutputStreamClass#lookup_ForAllTypes.txt"));
+			final String getSerialFieldsCode = 
+					IoUtil.getContentOfInputStream(
+							IoUtil.getResourceAsStream("java.io.OutputStreamClass#getSerialFields_ForAllTypes.txt"));
+			 
+	        Instrumenter<ObjectStreamClass> objectStreamClassInstrumenter = 
+	        		instrumenterService.getInstrumenter(ObjectStreamClass.class);
+	        GeneratedClass<ObjectStreamClass> instrumentedObjectStreamClass = 
+	        		objectStreamClassInstrumenter.
+	        		updateConstructor(
+	        			"{" + constructorCode + "}",
+	        			new Class<?>[] { Class.class }).
+		        	updateMethod(
+		        		"lookup", 
+		        		"{" + lookupCode + "}", 
+		        		new Class<?>[] { Class.class, boolean.class }).
+		        	updateMethod(
+				        "getSerialFields", 
+				        "{" + getSerialFieldsCode + "}", 
+				        new Class<?>[] { Class.class }).
+		        	build();
+	        instrumenterService.redefineClass(instrumentedObjectStreamClass);
 		}
 		catch (Throwable t) {
 			logger.error("Error occured while updating serialization for all types", t);

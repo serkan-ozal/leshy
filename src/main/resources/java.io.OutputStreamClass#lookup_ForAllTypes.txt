@@ -1,23 +1,25 @@
 try {  
-    	java.lang.reflect.Field localDescsField = Class.forName("java.io.OutputStreamClass$Caches").getField("localDescs");
+    	java.lang.reflect.Field localDescsField = Class.forName("java.io.ObjectStreamClass$Caches").getDeclaredField("localDescs");
     	localDescsField.setAccessible(true);
         java.util.concurrent.ConcurrentMap localDescs = localDescsField.get(null);
         
-        java.lang.reflect.Field localDescsQueueField = Class.forName("java.io.OutputStreamClass$Caches").getField("localDescsQueue");
+        java.lang.reflect.Field localDescsQueueField = Class.forName("java.io.ObjectStreamClass$Caches").getDeclaredField("localDescsQueue");
     	localDescsQueueField.setAccessible(true);
         java.lang.ref.ReferenceQueue localDescsQueue = localDescsQueueField.get(null);
         
         processQueue(localDescsQueue, localDescs);
-        WeakClassKey key = new WeakClassKey($2, localDescsQueue);
-        Reference ref = localDescs.get(key);
+        java.io.ObjectStreamClass.WeakClassKey key = new java.io.ObjectStreamClass.WeakClassKey($1, localDescsQueue);
+        java.lang.ref.Reference ref = localDescs.get(key);
         Object entry = null;
         if (ref != null) {
             entry = ref.get();
         }
-        EntryFuture future = null;
+        java.io.ObjectStreamClass.EntryFuture future = null;
         if (entry == null) {
-            EntryFuture newEntry = new EntryFuture();
-            Reference newRef = new SoftReference(newEntry);
+          	java.lang.reflect.Constructor c = java.io.ObjectStreamClass.EntryFuture.class.getDeclaredConstructor(null);
+	    	c.setAccessible(true);
+            java.io.ObjectStreamClass.EntryFuture newEntry = (java.io.ObjectStreamClass.EntryFuture)c.newInstance(new Object[0]);
+            java.lang.ref.Reference newRef = new java.lang.ref.SoftReference(newEntry);
             do {
                 if (ref != null) {
                     localDescs.remove(key, ref);
@@ -35,8 +37,8 @@ try {
         if (entry instanceof ObjectStreamClass) {  // check common case first
             return (ObjectStreamClass) entry;
         }
-        if (entry instanceof EntryFuture) {
-            future = (EntryFuture) entry;
+        if (entry instanceof java.io.ObjectStreamClass.EntryFuture) {
+            future = (java.io.ObjectStreamClass.EntryFuture) entry;
             if (future.getOwner() == Thread.currentThread()) {
                 /*
                  * Handle nested call situation described by 4803747: waiting
@@ -51,12 +53,12 @@ try {
         }
         if (entry == null) {
             try {
-                entry = new ObjectStreamClass($2);
+                entry = new ObjectStreamClass($1);
             } catch (Throwable th) {
                 entry = th;
             }
             if (future.set(entry)) {
-                localDescs.put(key, new SoftReference(entry));
+                localDescs.put(key, new java.lang.ref.SoftReference(entry));
             } else {
                 // nested lookup call already set future
                 entry = future.get();
